@@ -1,0 +1,8 @@
+{
+  "name": "uaepass-interceptor",
+  "version": "1.0.0",
+  "cordova": {
+    "id": "uaepass.interceptor",
+    "platforms": ["android", "ios"]
+  }
+}
