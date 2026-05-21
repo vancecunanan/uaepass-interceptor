@@ -3,49 +3,38 @@ package com.uaepass.interceptor;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import org.apache.cordova.CordovaPlugin;
 
 public class UAEPassInterceptor extends CordovaPlugin {
 
     @Override
-    public void pluginInitialize() {
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
-        cordova.getActivity().runOnUiThread(() -> {
+        if (intent != null && intent.getData() != null) {
 
-            WebView view = (WebView) this.webView.getEngine().getView();
+            Uri uri = intent.getData();
+            String url = uri.toString();
 
-            view.setWebViewClient(new WebViewClient() {
+            Log.d("UAEPASS", "Incoming intent URL: " + url);
 
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            if (url.startsWith("uaepass://")) {
 
-                    Log.d("UAEPASS", "Intercepted URL: " + url);
+                try {
+                    String newUrl = url.replace("uaepass://", "uaepassstg://");
 
-                    if (url != null && url.startsWith("uaepass://")) {
+                    Log.d("UAEPASS", "Redirecting to: " + newUrl);
 
-                        try {
-                            String newUrl = url.replace("uaepass://", "uaepassstg://");
+                    Intent newIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(newUrl));
+                    newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                            Log.d("UAEPASS", "Redirecting to: " + newUrl);
+                    cordova.getActivity().startActivity(newIntent);
 
-                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(newUrl));
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-                            cordova.getActivity().startActivity(intent);
-
-                            return true;
-
-                        } catch (Exception e) {
-                            Log.e("UAEPASS", "Error", e);
-                        }
-                    }
-
-                    return false;
+                } catch (Exception e) {
+                    Log.e("UAEPASS", "Error handling intent", e);
                 }
-            });
-        });
+            }
+        }
     }
 }
