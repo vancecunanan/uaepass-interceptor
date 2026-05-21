@@ -2,37 +2,52 @@ package com.uaepass.interceptor;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import org.apache.cordova.*;
+import org.apache.cordova.engine.SystemWebViewClient;
+import org.apache.cordova.engine.SystemWebViewEngine;
 
 public class UAEPassInterceptor extends CordovaPlugin {
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void pluginInitialize() {
 
         cordova.getActivity().runOnUiThread(() -> {
 
-            WebView view = (WebView) this.webView.getEngine().getView();
+            SystemWebViewEngine engine = (SystemWebViewEngine) webView.getEngine();
+            SystemWebViewClient existingClient = new SystemWebViewClient(engine) {
 
-            view.setWebViewClient(new WebViewClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
 
-                    if (url.startsWith("uaepass://")) {
-                        String newUrl = url.replace("uaepass://", "uaepassstg://");
+                    Log.d("UAEPASS", "Intercepted URL: " + url);
 
-                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(newUrl));
-                        cordova.getActivity().startActivity(intent);
+                    if (url != null && url.startsWith("uaepass://")) {
 
-                        return true;
+                        try {
+                            String newUrl = url.replace("uaepass://", "uaepassstg://");
+
+                            Log.d("UAEPASS", "Redirecting to: " + newUrl);
+
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(newUrl));
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                            cordova.getActivity().startActivity(intent);
+
+                            return true; // stop original
+
+                        } catch (Exception e) {
+                            Log.e("UAEPASS", "Error handling URL", e);
+                        }
                     }
 
-                    return false;
+                    return super.shouldOverrideUrlLoading(view, url);
                 }
-            });
+            };
+
+            engine.getView().setWebViewClient(existingClient);
         });
     }
 }
