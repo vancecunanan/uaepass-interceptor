@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="uaepass.interceptor" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+    <name>UAEPassInterceptor</name>
+
+    <platform name="android">
+        <source-file src="src/android/UAEPassInterceptor.java" target-dir="src/com/uaepass/interceptor" />
+    </platform>
+
+    <platform name="ios">
+        <source-file src="src/ios/UAEPassInterceptor.m" />
+    </platform>
+</plugin>
