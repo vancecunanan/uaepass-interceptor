@@ -4,10 +4,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
-import org.apache.cordova.*;
-import org.apache.cordova.engine.SystemWebViewClient;
-import org.apache.cordova.engine.SystemWebViewEngine;
+import org.apache.cordova.CordovaPlugin;
 
 public class UAEPassInterceptor extends CordovaPlugin {
 
@@ -16,8 +15,9 @@ public class UAEPassInterceptor extends CordovaPlugin {
 
         cordova.getActivity().runOnUiThread(() -> {
 
-            SystemWebViewEngine engine = (SystemWebViewEngine) webView.getEngine();
-            SystemWebViewClient existingClient = new SystemWebViewClient(engine) {
+            WebView view = (WebView) this.webView.getEngine().getView();
+
+            view.setWebViewClient(new WebViewClient() {
 
                 @Override
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -36,18 +36,16 @@ public class UAEPassInterceptor extends CordovaPlugin {
 
                             cordova.getActivity().startActivity(intent);
 
-                            return true; // stop original
+                            return true;
 
                         } catch (Exception e) {
-                            Log.e("UAEPASS", "Error handling URL", e);
+                            Log.e("UAEPASS", "Error", e);
                         }
                     }
 
-                    return super.shouldOverrideUrlLoading(view, url);
+                    return false;
                 }
-            };
-
-            engine.getView().setWebViewClient(existingClient);
+            });
         });
     }
 }
